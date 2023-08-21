@@ -1,0 +1,14 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.37.1"
+  },
+  "scripts": {
+    "e2e": "npx playwright test",
+    "e2e-ui": "npx playwright test --headed",
+    "debug": "npx playwright test --project=chromium --headed --debug"
+  }
+}
