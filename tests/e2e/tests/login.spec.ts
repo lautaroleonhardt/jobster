@@ -1,63 +1,62 @@
-import { expect, test } from '@playwright/test'
-import { HomePage } from '../pages/home.page'
+import { expect } from '@playwright/test'
+import { JobsterApi } from '../../helpers/jobsterApi.helper'
+import { MongoHelper } from '../../helpers/mongo.helper'
+import { RegisterUserDto } from '../../entities/auth'
 import { UserActions } from '../actions/user.actions'
-import { validUser } from '../data/users.data'
-import { LoginPage } from '../pages/Login.page'
-import { DashboardPage } from '../pages/Dashboard.page'
+import { test } from '../playwright/test'
+import { RegisterPayloadBuilder } from '../../helpers/Builders/RegisterUserDtoBuilder'
 
 test.describe('Login Page', () => {
-  let homePage: HomePage
-  let loginPage: LoginPage
-  let dashboardPage: DashboardPage
   let userActions: UserActions
+  let registerPayload: RegisterUserDto
 
-  test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page)
-    loginPage = new LoginPage(page)
-    dashboardPage = new DashboardPage(page)
+  test.beforeEach(async ({ homePage, page }) => {
     userActions = new UserActions(page)
+    registerPayload = new RegisterPayloadBuilder().addEmail().addPassword().addName().build()
+    await JobsterApi.registerUser(registerPayload)
     await homePage.goto()
   })
 
-  test('User logs in successfully', async () => {
-    const { email, password, firstName } = validUser
+  test.afterEach(async () => {
+    const filter = { email: registerPayload.email }
+    const mongoHelper = new MongoHelper('jobster')
+    await mongoHelper.deleteOne(filter, 'users')
+  })
+
+  test('User logs in successfully', async ({ homePage, dashboardPage }) => {
+    const { email, password, name } = registerPayload
     await userActions.login(email, password)
-    await expect.soft(homePage.alert).toBeVisible()
-    await expect.soft(homePage.alert).toHaveText(`Welcome Back ${firstName}`)
+    await expect(homePage.alert).toHaveText(`Welcome Back ${name}`)
     await expect(dashboardPage.dashboardText).toBeVisible()
   })
 
-  test('User should not login by not entering email', async () => {
-    const { password } = validUser
+  test('User should not login by not entering email', async ({ loginPage, homePage }) => {
+    const { password } = registerPayload
     await userActions.login('', password)
-    await expect.soft(homePage.alert).toBeVisible()
-    await expect.soft(homePage.alert).toHaveText('Please fill out all fields')
+    await expect(homePage.alert).toHaveText('Please fill out all fields')
     await expect(loginPage.loginText).toBeVisible()
   })
 
-  test('User should not login by not entering password', async () => {
-    const { email } = validUser
+  test('User should not login by not entering password', async ({ loginPage, homePage }) => {
+    const { email } = registerPayload
     await userActions.login(email, '')
-    await expect.soft(homePage.alert).toBeVisible()
-    await expect.soft(homePage.alert).toHaveText('Please fill out all fields')
+    await expect(homePage.alert).toHaveText('Please fill out all fields')
     await expect(loginPage.loginText).toBeVisible()
   })
 
-  test('User should not login by entering invalid email', async () => {
-    const { email, password } = validUser
+  test('User should not login by entering invalid email', async ({ loginPage, homePage }) => {
+    const { email, password } = registerPayload
     const invalidEmail = `!${email}`
     await userActions.login(invalidEmail, password)
-    await expect.soft(homePage.alert).toBeVisible()
-    await expect.soft(homePage.alert).toHaveText('Invalid Credentials')
+    await expect(homePage.alert).toHaveText('Invalid Credentials')
     await expect(loginPage.loginText).toBeVisible()
   })
 
-  test('User should not login by entering invalid password', async () => {
-    const { email, password } = validUser
+  test('User should not login by entering invalid password', async ({ loginPage, homePage }) => {
+    const { email, password } = registerPayload
     const invalidPassword = `!${password}`
     await userActions.login(email, invalidPassword)
-    await expect.soft(homePage.alert).toBeVisible()
-    await expect.soft(homePage.alert).toHaveText('Invalid Credentials')
+    await expect(homePage.alert).toHaveText('Invalid Credentials')
     await expect(loginPage.loginText).toBeVisible()
   })
 })
