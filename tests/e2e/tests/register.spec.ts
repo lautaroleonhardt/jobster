@@ -1,31 +1,34 @@
-import { expect, test } from '@playwright/test'
-import { LoginPage } from '../pages/Login.page'
-import { UserActions } from '../actions/user.actions'
-import { HomePage } from '../pages/home.page'
+import { expect } from '@playwright/test'
+import { MongoHelper } from '../../helpers/mongo.helper'
 import { User } from '../Entities/User'
-import { DashboardPage } from '../pages/Dashboard.page'
+import { UserActions } from '../actions/user.actions'
+import { test } from '../playwright/test'
+import { RegisterUserDto } from '../../entities/auth'
+import { RegisterPayloadBuilder } from '../../helpers/Builders/RegisterUserDtoBuilder'
 
 test.describe('Register page', () => {
-  let loginPage: LoginPage
-  let homePage: HomePage
-  let dashboardPage: DashboardPage
   let userActions: UserActions
+  let registerPayload: RegisterUserDto
+  const user = new User()
 
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page)
-    homePage = new HomePage(page)
-    dashboardPage = new DashboardPage(page)
+  test.beforeEach(async ({ page, homePage }) => {
     userActions = new UserActions(page)
+    registerPayload = new RegisterPayloadBuilder().addEmail().addPassword().addName().build()
+
     await homePage.goto()
   })
 
-  test('User can register successfully', async () => {
-    const user = new User('male')
-    await homePage.registerButton.click()
+  test.afterEach(async () => {
+    const filter = { email: registerPayload.email }
+    const mongoHelper = new MongoHelper('jobster')
+    await mongoHelper.deleteOne(filter, 'users')
+  })
+
+  test('User can register successfully', async ({ homePage, loginPage, dashboardPage }) => {
+    await homePage.loginRegisterButton.click()
     await loginPage.registerButton.click()
-    await userActions.register(user)
-    await expect.soft(dashboardPage.alert).toBeVisible()
-    await expect.soft(dashboardPage.alert).toHaveText(`Hello There ${user.firstName}`)
+    await userActions.register(registerPayload)
+    await expect(dashboardPage.alert).toHaveText(`Hello There ${registerPayload.name}`)
     await expect(dashboardPage.dashboardText).toBeVisible()
   })
 })
