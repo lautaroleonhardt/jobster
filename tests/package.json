@@ -9,6 +9,9 @@
   "scripts": {
     "e2e": "npx playwright test",
     "e2e-ui": "npx playwright test --headed",
-    "debug": "npx playwright test --project=chromium --headed --debug"
+    "debug": "npx playwright test --headed --debug"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
   }
 }
