@@ -1,31 +1,36 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
+import { JobsterApi } from '../../helpers/jobsterApi.helper'
+import { MongoHelper } from '../../helpers/mongo.helper'
+import { RegisterUserDto } from '../../entities/auth'
+import { RegisterPayloadBuilder } from '../../helpers/Builders/RegisterUserDtoBuilder'
 import { UserActions } from '../actions/user.actions'
-import { HomePage } from '../pages/home.page'
-import { validUser } from '../data/users.data'
-import { Navbar } from '../pages/Navbar.page'
+import { test } from '../playwright/test'
 
 test.describe('Register page', () => {
-  let homePage: HomePage
-  let navbar: Navbar
   let userActions: UserActions
+  let registerPayload: RegisterUserDto
 
-  test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page)
-    navbar = new Navbar(page)
+  test.beforeEach(async ({ page, homePage }) => {
     userActions = new UserActions(page)
-    const { email, password } = validUser
+    registerPayload = new RegisterPayloadBuilder().addEmail().addPassword().addName().build()
 
+    await JobsterApi.registerUser(registerPayload)
     await homePage.goto()
-    await userActions.login(email, password)
+    await userActions.login(registerPayload.email, registerPayload.password)
     await homePage.closeAlertButton.click()
   })
 
-  test('User can logout successfully', async ({ page }) => {
-    const { firstName } = validUser
-    await navbar.profileButton(firstName).click()
+  test.afterEach(async () => {
+    const filter = { email: registerPayload.email }
+    const mongoHelper = new MongoHelper('jobster')
+    await mongoHelper.deleteOne(filter, 'users')
+  })
+
+  test('User can logout successfully', async ({ page, navbar, homePage }) => {
+    const { name } = registerPayload
+    await navbar.profileButton(name).click()
     await navbar.logoutButton.click()
-    await expect.soft(homePage.alert).toBeVisible()
-    await expect.soft(homePage.alert).toHaveText('Logging out...')
+    await expect(homePage.alert).toHaveText('Logging out...')
     expect(page.url()).toContain('/landing')
   })
 })
