@@ -1,0 +1,7 @@
+export * from './Base.page'
+export * from './Dashboard.page'
+export * from './Home.page'
+export * from './Login.page'
+export * from './Navbar.page'
+export * from './Register.page'
+export * from './Profile.page'
