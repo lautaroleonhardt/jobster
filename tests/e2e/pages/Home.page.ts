@@ -12,7 +12,7 @@ export class HomePage extends BasePage {
     this.page.goto(this.path)
   }
 
-  get registerButton() {
+  get loginRegisterButton() {
     return this.page.getByRole('link', { name: 'Login/Register' })
   }
 }
