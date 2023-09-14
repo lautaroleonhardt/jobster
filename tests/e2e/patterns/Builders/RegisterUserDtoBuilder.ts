@@ -1,5 +1,5 @@
-import { User, UserProps } from '../../e2e/Entities/User'
-import { RegisterUserDto } from '../../entities/auth'
+import { User, UserProps } from '../../Entities/User'
+import { RegisterUserDto } from '../../../entities/auth'
 
 export class RegisterPayloadBuilder {
   private registerUserDto: RegisterUserDto
@@ -31,26 +31,5 @@ export class RegisterPayloadBuilder {
 
   build(): RegisterUserDto {
     return this.registerUserDto
-  }
-}
-
-export class ValidPayloadDto extends RegisterPayloadBuilder {
-  constructor() {
-    super()
-    this.addEmail().addPassword().addName()
-  }
-}
-
-export class InvalidPasswordPayloadDto extends RegisterPayloadBuilder {
-  constructor() {
-    super({ password: { length: 1 } })
-    this.addEmail().addPassword().addName()
-  }
-}
-
-export class InvalidEmailPayloadDto extends RegisterPayloadBuilder {
-  constructor() {
-    super()
-    this.addEmail('user@').addPassword().addName()
   }
 }
