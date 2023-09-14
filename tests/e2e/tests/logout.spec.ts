@@ -2,9 +2,9 @@ import { expect } from '@playwright/test'
 import { JobsterApi } from '../../helpers/jobsterApi.helper'
 import { MongoHelper } from '../../helpers/mongo.helper'
 import { RegisterUserDto } from '../../entities/auth'
-import { RegisterPayloadBuilder } from '../../helpers/Builders/RegisterUserDtoBuilder'
 import { UserActions } from '../actions/user.actions'
 import { test } from '../playwright/test'
+import { RegisterPayloadFactory } from '../patterns/Factories/RegisterPayloadFactory'
 
 test.describe('Register page', () => {
   let userActions: UserActions
@@ -12,7 +12,8 @@ test.describe('Register page', () => {
 
   test.beforeEach(async ({ page, homePage }) => {
     userActions = new UserActions(page)
-    registerPayload = new RegisterPayloadBuilder().addEmail().addPassword().addName().build()
+    const registerPayloadFactory = new RegisterPayloadFactory()
+    registerPayload = registerPayloadFactory.createPayload().build()
 
     await JobsterApi.registerUser(registerPayload)
     await homePage.goto()

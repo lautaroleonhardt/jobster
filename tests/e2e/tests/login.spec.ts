@@ -4,7 +4,7 @@ import { MongoHelper } from '../../helpers/mongo.helper'
 import { RegisterUserDto } from '../../entities/auth'
 import { UserActions } from '../actions/user.actions'
 import { test } from '../playwright/test'
-import { RegisterPayloadBuilder } from '../../helpers/Builders/RegisterUserDtoBuilder'
+import { RegisterPayloadFactory } from '../patterns/Factories/RegisterPayloadFactory'
 
 test.describe('Login Page', () => {
   let userActions: UserActions
@@ -12,7 +12,9 @@ test.describe('Login Page', () => {
 
   test.beforeEach(async ({ homePage, page }) => {
     userActions = new UserActions(page)
-    registerPayload = new RegisterPayloadBuilder().addEmail().addPassword().addName().build()
+    const registerPayloadFactory = new RegisterPayloadFactory()
+    registerPayload = registerPayloadFactory.createPayload().build()
+
     await JobsterApi.registerUser(registerPayload)
     await homePage.goto()
   })

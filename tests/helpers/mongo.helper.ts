@@ -1,11 +1,13 @@
-import { MongoClient } from 'mongodb'
+import { MongoClient, Db } from 'mongodb'
 import { FilterQuery } from 'mongoose'
 
 export class MongoHelper {
   private client: MongoClient
+  private db: Db
 
-  constructor(private db: string, uri?: string) {
-    this.client = new MongoClient(uri || this.getBasicUri(db))
+  constructor(private dbName: string, uri?: string) {
+    this.client = new MongoClient(uri || this.getBasicUri(dbName))
+    this.db = this.client.db(dbName)
   }
 
   private getBasicUri(db: string): string {
@@ -15,11 +17,22 @@ export class MongoHelper {
   async deleteOne(filter: FilterQuery<any>, collection: string) {
     try {
       await this.client.connect()
-      const db = this.client.db(this.db)
-      const collectionRef = db.collection(collection)
+      const collectionRef = this.db.collection(collection)
       await collectionRef.deleteOne(filter)
     } catch (error) {
       throw new Error(`Cannot delete document in collection ${collection} due to: ${error}`)
+    } finally {
+      await this.client.close()
+    }
+  }
+
+  async findOne(filter: FilterQuery<any>, collection: string) {
+    try {
+      await this.client.connect()
+      const collectionRef = this.db.collection(collection)
+      return await collectionRef.findOne(filter)
+    } catch (error) {
+      throw new Error(`Cannot find document in collection ${collection} due to: ${error}`)
     } finally {
       await this.client.close()
     }

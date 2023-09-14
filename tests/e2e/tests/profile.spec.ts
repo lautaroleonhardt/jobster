@@ -6,27 +6,27 @@ import { User } from '../Entities/User'
 import { UserActions } from '../actions/user.actions'
 import { test } from '../playwright/test'
 import type { EditableFields } from '../pages'
-import { RegisterPayloadBuilder } from '../../helpers/Builders/RegisterUserDtoBuilder'
+import { RegisterPayloadFactory } from '../patterns/Factories/RegisterPayloadFactory'
 
 test.describe('Profile page', () => {
   let userActions: UserActions
   let registerPayload: RegisterUserDto
   let userEmail: string
+  const mongoHelper = new MongoHelper('jobster')
 
   test.beforeEach(async ({ page, homePage }) => {
     userActions = new UserActions(page)
+    const registerPayloadFactory = new RegisterPayloadFactory()
+    registerPayload = registerPayloadFactory.createPayload().build()
 
-    registerPayload = new RegisterPayloadBuilder().addEmail().addPassword().addName().build()
     await JobsterApi.registerUser(registerPayload)
     await homePage.goto()
     await userActions.login(registerPayload.email, registerPayload.password)
     await homePage.closeAlertButton.click()
   })
 
-  test.afterEach(async ({}, testInfo) => {
-    const filter = { email: userEmail }
-    const mongoHelper = new MongoHelper('jobster')
-    await mongoHelper.deleteOne(filter, 'users')
+  test.afterEach(async () => {
+    await mongoHelper.deleteOne({ email: userEmail }, 'users')
   })
 
   test('User can edit all the fields', async ({ page, sidebar, profilePage }) => {
@@ -43,6 +43,8 @@ test.describe('Profile page', () => {
     expect(await profilePage.lastNameField.inputValue()).toEqual(lastName)
     expect(await profilePage.emailField.inputValue()).toEqual(email)
     expect(await profilePage.locationField.inputValue()).toEqual(location)
+    const queryResult = await mongoHelper.findOne({ email: userEmail }, 'users')
+    expect(queryResult).toMatchObject({ name: firstName, lastName, email, location })
   })
 
   test('User can log in after updating the email', async ({ sidebar, profilePage, homePage, dashboardPage }) => {
