@@ -1,5 +1,5 @@
-import { User, UserProps } from '../../Entities/User'
-import { RegisterUserDto } from '../../../entities/auth'
+import { User, UserProps } from '../../objects/User'
+import { RegisterUserDto } from '../../entities/auth'
 
 export class RegisterPayloadBuilder {
   private registerUserDto: RegisterUserDto

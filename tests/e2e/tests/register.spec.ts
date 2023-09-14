@@ -3,7 +3,7 @@ import { MongoHelper } from '../../helpers/mongo.helper'
 import { UserActions } from '../actions/user.actions'
 import { test } from '../playwright/test'
 import { RegisterUserDto } from '../../entities/auth'
-import { RegisterPayloadFactory } from '../patterns/Factories/RegisterPayloadFactory'
+import { RegisterPayloadFactory } from '../../patterns/Factories/RegisterPayloadFactory'
 
 test.describe('Register page', () => {
   let userActions: UserActions

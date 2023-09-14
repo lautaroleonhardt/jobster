@@ -2,11 +2,11 @@ import { expect } from '@playwright/test'
 import { JobsterApi } from '../../helpers/jobsterApi.helper'
 import { MongoHelper } from '../../helpers/mongo.helper'
 import { RegisterUserDto } from '../../entities/auth'
-import { User } from '../Entities/User'
+import { User } from '../../objects/User'
 import { UserActions } from '../actions/user.actions'
 import { test } from '../playwright/test'
 import type { EditableFields } from '../pages'
-import { RegisterPayloadFactory } from '../patterns/Factories/RegisterPayloadFactory'
+import { RegisterPayloadFactory } from '../../patterns/Factories/RegisterPayloadFactory'
 
 test.describe('Profile page', () => {
   let userActions: UserActions

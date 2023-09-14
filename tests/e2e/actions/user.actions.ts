@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
 import { RegisterPage, LoginPage, HomePage, Navbar } from '../pages'
-import { User } from '../Entities/User'
+import { User } from '../../objects/User'
 import { RegisterUserDto } from '../../entities/auth'
 
 export class UserActions {
